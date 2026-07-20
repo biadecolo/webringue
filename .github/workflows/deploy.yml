@@ -34,6 +34,7 @@ jobs:
         uses: BunnyWay/actions/deploy-script@main
         with:
           script_id: 82474
+          deploy_key: ${{ secrets.BUNNY_DEPLOY_KEY }}
           file: dist/index.js
 
       - name: Upload static files to Bunny Storage
