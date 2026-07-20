@@ -1,0 +1,62 @@
+name: deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm typecheck
+
+      - run: pnpm build
+
+      - name: Deploy Script to Bunny Edge Scripting
+        uses: BunnyWay/actions/deploy-script@main
+        with:
+          script_id: 82474
+          file: dist/index.js
+
+      - name: Upload static files to Bunny Storage
+        env:
+          STORAGE_HOST: br.storage.bunnycdn.com
+          STORAGE_ZONE: webringue
+          STORAGE_KEY: ${{ secrets.BUNNY_STORAGE_PASSWORD }}
+        run: |
+          upload() {
+            curl --fail --silent --show-error \
+              -T "$1" \
+              -H "AccessKey: $STORAGE_KEY" \
+              "https://$STORAGE_HOST/$STORAGE_ZONE/$2"
+          }
+          upload webringue.html index.html
+          find assets -type f | while read -r file; do
+            upload "$file" "$file"
+          done
+
+      - name: Purge pull zone cache
+        env:
+          API_KEY: ${{ secrets.BUNNY_API_KEY }}
+        run: |
+          curl --fail --silent --show-error -X POST \
+            -H "AccessKey: $API_KEY" \
+            "https://api.bunny.net/pullzone/6182918/purgeCache"
