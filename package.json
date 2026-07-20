@@ -6,6 +6,7 @@
   "scripts": {
     "start": "tsx src/index.ts",
     "dev": "tsx watch src/index.ts",
+    "build": "ncc build src/main.ts -o dist/",
     "typecheck": "tsc --noEmit"
   },
   "keywords": [],
@@ -20,12 +21,14 @@
   },
   "type": "module",
   "dependencies": {
+    "@bunny.net/edgescript-sdk": "^0.12.1",
     "@hono/node-server": "^2.0.10",
     "hono": "^4.12.31"
   },
   "devDependencies": {
     "@types/node": "^26.1.1",
+    "@vercel/ncc": "^0.44.1",
     "tsx": "^4.23.1",
-    "typescript": "^7.0.2"
+    "typescript": "^5.9.3"
   }
 }
